@@ -2,26 +2,33 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
+/// Simple todo list manager
 struct Cli {
     #[command(subcommand)]
     command: Option<TodoCommands>,
 }
 #[derive(Subcommand, Debug)]
 enum TodoCommands {
+    /// List all pending tasks
     List,
+    /// Add a new task
     Add(AddArgs),
+    /// Remove a task
     Remove(RemoveArgs),
 }
 
 #[derive(Args, Debug)]
 struct AddArgs {
+    /// The description of the task you want to add to your list
     description: String,
+    /// Set the priority level of the task
     #[arg(short, long, value_enum, default_value_t=Priority::Normal)]
     priority: Priority,
 }
 
 #[derive(Args, Debug)]
 struct RemoveArgs {
+    /// Position of the task to remove
     position: u8,
 }
 
