@@ -50,12 +50,13 @@ fn get_tasks() -> Result<Vec<Task>, &'static str> {
     }
 }
 
+/// Print all the tasks in a colour coded table
 pub fn list_tasks() -> Result<(), &'static str> {
     let mut tasks = get_tasks()?;
     tasks.sort_by(|t1, t2| t2.priority.cmp(&t1.priority));
 
     let mut table_builder = Builder::default();
-    for task in tasks {
+    for (index, task) in tasks.iter().enumerate() {
         let priority = match task.priority {
             0 => "low".dimmed(),
             1 => "normal".white(),
@@ -63,12 +64,17 @@ pub fn list_tasks() -> Result<(), &'static str> {
             3 => "urgent".red().bold(),
             _ => "".clear(),
         };
-        table_builder.push_record([format!("{0}", priority), format!("{0}", task.description)])
+        table_builder.push_record([
+            format!("{index}"),
+            format!("{0}", priority),
+            format!("{0}", task.description),
+        ])
     }
+    // build table and set styling
     let mut table = table_builder.build();
     table.with(Style::modern());
     table
-        .modify(Columns::first(), Width::increase(10))
+        .modify(Columns::single(1), Width::increase(8))
         .modify(Columns::last(), Width::wrap(60));
     println!("{table}");
     Ok(())
@@ -96,6 +102,7 @@ pub fn add_task(task: Task) -> Result<(), &'static str> {
     fs::write(data_dir, json_string).map_err(|_| "Could not serialize task")
 }
 
+/// Removes a task from the list
 pub fn remove_task(position: usize) -> Result<(), &'static str> {
     let mut tasks = get_tasks()?;
 
