@@ -1,8 +1,11 @@
+use colored::Colorize;
 use dirs;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::io::{self};
 use std::{fs, fs::File};
+use tabled::builder::Builder;
+use tabled::settings::{object::Columns, Style, Width};
 
 #[derive(Serialize, Deserialize)]
 pub struct Task {
@@ -48,11 +51,26 @@ fn get_tasks() -> Result<Vec<Task>, &'static str> {
 }
 
 pub fn list_tasks() -> Result<(), &'static str> {
-    let tasks = get_tasks()?;
+    let mut tasks = get_tasks()?;
+    tasks.sort_by(|t1, t2| t2.priority.cmp(&t1.priority));
 
+    let mut table_builder = Builder::default();
     for task in tasks {
-        println!("{0:<12}{1}", task.priority, task.description)
+        let priority = match task.priority {
+            0 => "low".dimmed(),
+            1 => "normal".white(),
+            2 => "high".yellow(),
+            3 => "urgent".red().bold(),
+            _ => "".clear(),
+        };
+        table_builder.push_record([format!("{0}", priority), format!("{0}", task.description)])
     }
+    let mut table = table_builder.build();
+    table.with(Style::modern());
+    table
+        .modify(Columns::first(), Width::increase(10))
+        .modify(Columns::last(), Width::wrap(60));
+    println!("{table}");
     Ok(())
 }
 
