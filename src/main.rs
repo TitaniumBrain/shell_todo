@@ -1,4 +1,5 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
+use shell_todo::{add_task, list_tasks, remove_task, Task};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -29,7 +30,7 @@ struct AddArgs {
 #[derive(Args, Debug)]
 struct RemoveArgs {
     /// Position of the task to remove
-    position: u8,
+    position: usize,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
@@ -43,18 +44,25 @@ enum Priority {
 fn main() {
     let cli = Cli::parse();
 
-    match &cli.command.unwrap_or(TodoCommands::List) {
-        TodoCommands::List => {
-            println!("List\nof\ntodos");
-        }
+    if let Err(result) = match cli.command.unwrap_or(TodoCommands::List) {
+        TodoCommands::List => list_tasks(),
         TodoCommands::Add(AddArgs {
             description,
             priority,
         }) => {
-            println!("Adding todo {:?} with priority {:?}", description, priority)
+            let priority = match priority {
+                Priority::Low => 0,
+                Priority::Normal => 1,
+                Priority::High => 2,
+                Priority::Urgent => 3,
+            };
+            add_task(Task {
+                description,
+                priority,
+            })
         }
-        TodoCommands::Remove(RemoveArgs { position }) => {
-            println!("Removing todo {:?}", position)
-        }
-    }
+        TodoCommands::Remove(RemoveArgs { position }) => remove_task(position),
+    } {
+        eprintln!("{result}")
+    };
 }
