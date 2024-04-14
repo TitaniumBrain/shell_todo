@@ -11,11 +11,18 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum TodoCommands {
     /// List all pending tasks
-    List,
+    List(ListArgs),
     /// Add a new task
     Add(AddArgs),
     /// Remove a task
     Remove(RemoveArgs),
+}
+
+#[derive(Args, Debug)]
+struct ListArgs {
+    /// Show output without colour
+    #[arg(long)]
+    no_colour: bool,
 }
 
 #[derive(Args, Debug)]
@@ -44,8 +51,11 @@ enum Priority {
 fn main() {
     let cli = Cli::parse();
 
-    if let Err(result) = match cli.command.unwrap_or(TodoCommands::List) {
-        TodoCommands::List => list_tasks(),
+    if let Err(result) = match cli
+        .command
+        .unwrap_or(TodoCommands::List(ListArgs { no_colour: false }))
+    {
+        TodoCommands::List(ListArgs { no_colour }) => list_tasks(no_colour),
         TodoCommands::Add(AddArgs {
             description,
             priority,

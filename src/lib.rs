@@ -51,9 +51,11 @@ fn get_tasks() -> Result<Vec<Task>, &'static str> {
 }
 
 /// Print all the tasks in a colour coded table
-pub fn list_tasks() -> Result<(), &'static str> {
+pub fn list_tasks(no_colour: bool) -> Result<(), &'static str> {
     let mut tasks = get_tasks()?;
     tasks.sort_by(|t1, t2| t2.priority.cmp(&t1.priority));
+
+    colored::control::set_override(!no_colour);
 
     let mut table_builder = Builder::default();
     for (index, task) in tasks.iter().enumerate() {
@@ -76,6 +78,7 @@ pub fn list_tasks() -> Result<(), &'static str> {
     table
         .modify(Columns::single(1), Width::increase(8))
         .modify(Columns::last(), Width::wrap(60));
+
     println!("{table}");
     Ok(())
 }
