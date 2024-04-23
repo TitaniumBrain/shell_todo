@@ -108,6 +108,7 @@ pub fn add_task(task: Task) -> Result<(), &'static str> {
 /// Removes a task from the list
 pub fn remove_task(position: usize) -> Result<(), &'static str> {
     let mut tasks = get_tasks()?;
+    tasks.sort_by(|t1, t2| t2.priority.cmp(&t1.priority));
 
     // remove task
     if position < tasks.len() {
